@@ -1,0 +1,7 @@
+{
+  "dependencies": {
+    "apollo-server": "2.2.0-alpha.3",
+    "pg": "7.6.0",
+    "postgraphile": "4.0.1"
+  }
+}
