@@ -1114,6 +1114,11 @@ pluralize@^7.0.0:
   resolved "https://registry.yarnpkg.com/pluralize/-/pluralize-7.0.0.tgz#298b89df8b93b0221dbf421ad2b1b1ea23fc6777"
   integrity sha512-ARhBOdzS3e41FbkW/XWrTEtukqqLoK5+Z/4UeDaLuSW+39JPeFgs4gCGqsrJHVZX0fUrx//4OF0K1CUGwlIFow==
 
+postgraphile-apollo-server@0.1.0:
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/postgraphile-apollo-server/-/postgraphile-apollo-server-0.1.0.tgz#a2c08a2880e80d5d5205d0bb956b8f2ab6bd7aaa"
+  integrity sha512-Izyd/87A1H/zZEkofqCglgssdxkKFOtJsskxcI381uAqXqYtCIQdzW6r9uxIdFhlqU++7sVXwB9JdIZPonFT6A==
+
 postgraphile-core@4.0.1:
   version "4.0.1"
   resolved "https://registry.yarnpkg.com/postgraphile-core/-/postgraphile-core-4.0.1.tgz#96419a61fc223eb5065373a8fc889eccce50bfd1"
