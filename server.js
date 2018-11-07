@@ -25,7 +25,11 @@ async function main() {
     dbSchema,
     postGraphileOptions
   );
-  const { pgSettings: pgSettingsGenerator } = postGraphileOptions;
+  const {
+    pgSettings: pgSettingsGenerator,
+    additionalGraphQLContextFromRequest,
+    jwtSecret
+  } = postGraphileOptions;
 
   const server = new ApolloServer({
     schema: graphqlSchema,
@@ -73,14 +77,21 @@ async function main() {
                */
               const { http: req } = graphqlRequest;
 
+              /*
+               * The below code implements similar logic to this area of
+               * PostGraphile:
+               *
+               * https://github.com/graphile/postgraphile/blob/ff620cac86f56b1cd58d6a260e51237c19df3017/src/postgraphile/http/createPostGraphileHttpRequestHandler.ts#L114-L131
+               */
+
               // Extract the JWT if present:
-              const authorizationBearerRex = /^\s*bearer\s+([a-z0-9\-._~+/]+=*)\s*$/i;
-              const matches =
-                req &&
-                req.headers &&
-                req.headers.authorization &&
-                req.headers.authorization.match(authorizationBearerRex);
-              const jwtToken = matches ? matches[1] : null;
+              const jwtToken = jwtSecret ? getJwtToken(req) : null;
+
+              // Extract additional context
+              const additionalContext =
+                typeof additionalGraphQLContextFromRequest === "function"
+                  ? await additionalGraphQLContextFromRequest(req /*, res */)
+                  : {};
 
               // Perform the `pgSettings` callback, if appropriate
               const pgSettings =
@@ -97,10 +108,14 @@ async function main() {
                     pgPool,
                     jwtToken
                   },
-                  context => {
+                  postgrapileContext => {
                     return new Promise(releaseContext => {
                       // Jesse, an Apollo Server developer, told me to do this 😜
-                      Object.assign(graphqlContext, context);
+                      Object.assign(
+                        graphqlContext,
+                        additionalGraphQLContextFromRequest,
+                        postgrapileContext
+                      );
 
                       /*
                        * Don't resolve (don't release the pgClient on context) until
@@ -127,7 +142,7 @@ async function main() {
             },
             willSendResponse(context) {
               // Release the context;
-              if (typeof finished === 'function') {
+              if (typeof finished === "function") {
                 finished();
               }
             }
@@ -140,6 +155,37 @@ async function main() {
   server.listen().then(({ url }) => {
     console.log(`🚀 Server ready at ${url}`);
   });
+}
+
+function httpError(status, message) {
+  const err = new Error(message);
+  err.status = status;
+  return err;
+}
+
+function createBadAuthorizationHeaderError() {
+  return httpError(
+    400,
+    "Authorization header is not of the correct bearer scheme format."
+  );
+}
+
+const authorizationBearerRex = /^\s*bearer\s+([a-z0-9\-._~+/]+=*)\s*$/i;
+function getJwtToken(request) {
+  const { authorization } = request.headers;
+  if (Array.isArray(authorization)) throw createBadAuthorizationHeaderError();
+
+  // If there was no authorization header, just return null.
+  if (authorization == null) return null;
+
+  const match = authorizationBearerRex.exec(authorization);
+
+  // If we did not match the authorization header with our expected format,
+  // throw a 400 error.
+  if (!match) throw createBadAuthorizationHeaderError();
+
+  // Return the token from our match.
+  return match[1];
 }
 
 main().catch(e => {
