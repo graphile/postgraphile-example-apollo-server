@@ -6,9 +6,20 @@ const { makeSchemaAndPlugin } = require("postgraphile-apollo-server");
 const postGraphileOptions = {
   jwtSecret: process.env.JWT_SECRET || String(Math.random()),
   subscriptions: true,
-  appendPlugins: [require("@graphile-contrib/pg-simplify-inflector")]
+  appendPlugins: [require("@graphile-contrib/pg-many-to-many"), require("@graphile-contrib/pg-simplify-inflector")],
   // dynamicJson: true,
   // etc
+  //
+  // watchPg: true,
+  // graphiql: true,
+  // enhanceGraphiql: true,
+  retryOnInitFail: true,
+  dynamicJson: true,
+  setofFunctionsContainNulls: false,
+  ignoreRBAC: false,
+  ignoreIndexes: true,
+  showErrorStack: true,
+  extendedErrors: ['hint', 'detail', 'errcode'],
 };
 
 const dbSchema = process.env.SCHEMA_NAMES
