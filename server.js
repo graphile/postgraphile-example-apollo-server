@@ -4,7 +4,9 @@ const { ApolloServer } = require("apollo-server");
 const { makeSchemaAndPlugin } = require("postgraphile-apollo-server");
 
 const postGraphileOptions = {
-  jwtSecret: process.env.JWT_SECRET || String(Math.random())
+  jwtSecret: process.env.JWT_SECRET || String(Math.random()),
+  subscriptions: true,
+  appendPlugins: [require("@graphile-contrib/pg-simplify-inflector")]
   // dynamicJson: true,
   // etc
 };
